@@ -47,12 +47,13 @@ const page = () => {
   } = useGlobalContext();
  
 
-
+ const [variants, setVariants] = useState([]);
+  const [options, setOptions] = useState([]);
 
  
   return (
     <div className="bg-[#f3f4f6] relative">
-   <FloatingSaveButton />
+   <FloatingSaveButton variants={variants}/>
       <div className="p-[15px] mt-20">Agregar producto</div> {/* Ajustar espacio para que no cubra el título */}
       <div className="flex flex-col md:flex-row gap-[15px] justify-center">
         {/* LADO IZQUIERDO */}
@@ -138,7 +139,12 @@ const page = () => {
 
           
           <ContenidoAdminIzquierda>
-          <VariantListTable />
+       <VariantListTable
+              variants={variants}
+              setVariants={setVariants}
+              options={options}
+              setOptions={setOptions}
+            />
           </ContenidoAdminIzquierda>
 
           <ContenidoAdminIzquierda>

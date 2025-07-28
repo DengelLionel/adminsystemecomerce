@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGlobalContext } from '../context/GlobalContext';
 
+interface FloatingSaveButtonProps {
+  variants: any[];
+}
 
-const FloatingSaveButton: React.FC = () => {
+const FloatingSaveButton: React.FC<FloatingSaveButtonProps> = ({ variants }) => {
   const router = useRouter();
   const {
     productName,
@@ -38,8 +41,7 @@ const FloatingSaveButton: React.FC = () => {
     setEtiquetas,
     mediaFiles,
     setMediaFiles,
-    variantsfinal, 
-    setVariantsfinal
+
   } = useGlobalContext();
 
 
@@ -71,7 +73,7 @@ const FloatingSaveButton: React.FC = () => {
           estado: productState,
           etiquetas: etiquetas.map((tag) => tag.nombre),
           archivos: mediaFiles,
-          variantes: variantsfinal,
+          variantes: variants,
         }),
       });
 
