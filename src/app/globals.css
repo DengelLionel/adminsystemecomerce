@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.resizeable-image {
+    position: relative;
+    max-width: 100%;
+    height: auto;
+    resize: both; /* Esto no funcionará automáticamente, pero es un estilo necesario */
+    overflow: hidden;
+  }
+/* Ajustar imágenes dentro del editor */
+div[contenteditable="true"] img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Asegurar que el wrapper no cause problemas de desbordamiento */
+div[contenteditable="true"] .resizer {
+  cursor: pointer;
+}
+
+/* Opcional: Ajustar para centrado y alineación de texto */
+div[contenteditable="true"] {
+  white-space: normal;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Asegurar que <ul> y <ol> muestren correctamente las viñetas y números */
+.richtext-editor ul {
+  list-style-type: disc;
+  padding-left: 20px; /* Espacio para mostrar la viñeta */
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.richtext-editor ol {
+  list-style-type: decimal;
+  padding-left: 20px; /* Espacio para mostrar el número */
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.richtext-editor li {
+  margin-bottom: 8px; /* Separar elementos de la lista para legibilidad */
+}
+.richtext-editor li:empty{
+  display: none;
+}
+.richtext-editor p:empty{
+  display: none;
+}
