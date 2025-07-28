@@ -86,7 +86,7 @@ const VariantTable: React.FC<VariantTableProps> = ({ variants, setVariants }) =>
               </td>
               <td className="px-4 py-2 text-sm text-gray-600">
                 {variant.nombre}
-                <div className="text-xs text-gray-400">3 variantes</div>
+            
               </td>
               <td className="px-4 py-2">
                 <input

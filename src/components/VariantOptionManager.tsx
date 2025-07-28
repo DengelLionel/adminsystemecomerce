@@ -56,9 +56,24 @@ const VariantOptionManager: React.FC<VariantOptionManagerProps> = ({ options, se
     setEditIndex(index);
   };
 
-  const handleConfirmOption = () => {
-    setEditIndex(null);
-  };
+const handleConfirmOption = () => {
+  setOptions(prev => {
+    const newOptions = prev.map((option, i) => {
+      if (i === editIndex) {
+        const cleanedValues = option.values.filter((v: string) => v.trim() !== "");
+        return { ...option, values: cleanedValues };
+      }
+      return option;
+    });
+
+    return [...newOptions]; // 👈 Muy importante
+  });
+
+  setEditIndex(null);
+};
+
+
+
 
   const handleDeleteValue = (optionIndex: number, valueIndex: number) => {
     setOptions((prev) =>
@@ -136,7 +151,7 @@ const VariantOptionManager: React.FC<VariantOptionManagerProps> = ({ options, se
               </div>
 
               <div className="flex flex-wrap gap-2 mt-2">
-                {option.values.map((value, i) => (
+               {option.values.filter((v: string) => v.trim() !== "").map((value, i) => (
                   <span key={i} className="px-3 py-1 bg-gray-200 rounded-full text-sm">
                     {value}
                   </span>

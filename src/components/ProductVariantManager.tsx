@@ -40,53 +40,68 @@ const ProductVariantManager: React.FC<ProductVariantManagerProps> = ({
     }
   }, []); // Solo una vez al montar
 
-  const generateCombinations = (optionsArray: any[]) => {
-    const valuesArray = optionsArray.map((option: any) =>
-      option.values.filter((v: string) => v.trim() !== "")
-    );
-    const cartesian = (arrays: any[]) => {
-      if (arrays.length === 0) return [[]];
-      return arrays.reduce((acc, curr) => acc.flatMap((a) => curr.map((c) => [...a, c])), [[]]);
-    };
-    return cartesian(valuesArray).map((combination: any) => {
-      return {
-        nombre: combination.join(" / "),
-        precio: 0,
-        stock: 0,
-        imagenUrl: '',
-        sku: '',
-        codigo_barras: '',
-        atributos: combination.map((value: any, index: number) => ({
-          atributoNombre: optionsArray[index].name,
-          valor: value,
-        })),
-      };
-    });
-  };
+function generateCombinations(attributes: Record<string, string[]>): any[] {
+  const keys = Object.keys(attributes);
+  const combinations: any[] = [];
 
-  useEffect(() => {
-    if (!options) return;
-    const filteredOptions = options
-      .map((opt) => ({
-        ...opt,
-        values: opt.values.filter((v: string) => v.trim() !== ""),
-      }))
-      .filter((opt) => opt.name.trim() !== "" && opt.values.length > 0);
-
-    const isEditing = variantsfinal.length > 0;
-
-    if (filteredOptions.length > 0 && !isEditing) {
-      const newVariants = generateCombinations(filteredOptions);
-      setVariants(newVariants);
-      setVariantsfinal(newVariants);
-      setOptionsfinal(filteredOptions);
-    } else if (!isEditing) {
-      setVariants([]);
-      setVariantsfinal([]);
-      setOptionsfinal([]);
+  function backtrack(index: number, current: any[]) {
+    if (index === keys.length) {
+      combinations.push([...current]);
+      return;
     }
-    console.log("variantes", variantsfinal)
-  }, [options]);
+console.log("atributos: ",attributes)
+    const key = keys[index];
+    const values = Array.isArray(attributes[key]) ? attributes[key] : [];
+
+    for (const value of values) {
+      current.push({ atributoNombre: key, valor: value });
+      backtrack(index + 1, current);
+      current.pop();
+    }
+  }
+
+  backtrack(0, []);
+
+  return combinations.map((atributos) => ({
+    nombre: atributos.map((a) => a.valor).join(' / '),
+    precio: 0,
+    stock: 0,
+    imagenUrl: '',
+    sku: '',
+    codigo_barras: '',
+    atributos,
+  }));
+}
+
+
+
+useEffect(() => {
+  if (!options) return;
+
+  const filteredOptions = options
+    .map((opt) => ({
+      ...opt,
+      values: opt.values.filter((v: string) => v.trim() !== ""),
+    }))
+    .filter((opt) => opt.name.trim() !== "" && opt.values.length > 0);
+
+  // 🔁 Construye el attributeMap correctamente
+  const attributeMap: Record<string, string[]> = {};
+  filteredOptions.forEach((opt) => {
+    attributeMap[opt.name] = opt.values;
+  });
+
+  if (filteredOptions.length > 0) {
+    const newVariants = generateCombinations(attributeMap);
+    setVariants(newVariants);
+  } else {
+    setVariants([]);
+  }
+
+  console.log("attributeMap:", attributeMap);
+}, [options]);
+
+
 
   return (
     <div className="space-y-8">
@@ -94,9 +109,11 @@ const ProductVariantManager: React.FC<ProductVariantManagerProps> = ({
       {options && setOptions && (
         <VariantOptionManager options={options} setOptions={setOptions} />
       )}
-      {Array.isArray(variants) && variants.length > 0 && (
-        <VariantTable variants={variants} setVariants={setVariants} />
-      )}
+   {Array.isArray(variants) && variants.length > 0 && (
+  <VariantTable variants={variants} setVariants={setVariants} />
+)}
+
+
     </div>
   );
 };

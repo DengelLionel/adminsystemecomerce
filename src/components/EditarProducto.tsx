@@ -116,7 +116,7 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
               optionsMap[attr.atributonombre].add(attr.valor);
             });
           });
-    
+
           // Preparar opciones para `VariantOptionManager`
           const initialOptions = Object.keys(optionsMap).map((optionName) => ({
             name: optionName,
