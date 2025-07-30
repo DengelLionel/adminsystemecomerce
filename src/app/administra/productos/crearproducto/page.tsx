@@ -49,11 +49,12 @@ const page = () => {
 
  const [variants, setVariants] = useState([]);
   const [options, setOptions] = useState([]);
+const [mediaFiles, setMediaFiles] = useState<{ url: string; tipo: string }[]>([]);
 
  
   return (
     <div className="bg-[#f3f4f6] relative">
-   <FloatingSaveButton variants={variants}/>
+   <FloatingSaveButton variants={variants} mediaFiles={mediaFiles} setMediaFiles={setMediaFiles}/>
       <div className="p-[15px] mt-20">Agregar producto</div> {/* Ajustar espacio para que no cubra el título */}
       <div className="flex flex-col md:flex-row gap-[15px] justify-center">
         {/* LADO IZQUIERDO */}
@@ -81,7 +82,7 @@ const page = () => {
             </div>
           </ContenidoAdminIzquierda>
           <ContenidoAdminIzquierda>
-            <MediaUploader />
+            <MediaUploader mediaFiles={mediaFiles} setMediaFiles={setMediaFiles} />
           </ContenidoAdminIzquierda>
           <ContenidoAdminIzquierda>
             <TextInput

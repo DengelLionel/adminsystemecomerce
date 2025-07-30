@@ -31,7 +31,6 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
       coleccion,
       setColeccion,
       etiquetas,
-      mediaFiles,
       setEtiquetas,
       categoria,
       setCategoria,
@@ -50,14 +49,14 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
       setCodigobarras,
       handleInputChange,
       setVariantsfinal,
-      setMediaFiles,
       setMetaDescription,
       setTitle,
       variantsfinal,optionsfinal, setOptionsfinal
     } = useGlobalContext();
     const [massEditMode, setMassEditMode] = useState(false);
     const [selectedVariants, setSelectedVariants] = useState<number[]>([]);
-    
+   const [mediaFiles, setMediaFiles] = useState<{ url: string; tipo: string }[]>([]);
+
     const id = params.id; // Obtener el ID del producto de las props
   
     const cargarDatosProducto = async () => {
@@ -84,12 +83,14 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
             setSlug(data.slug);
             setMetaDescription(data.metaDescripcion);
             setTitle(data.metaTitulo);
-            setMediaFiles(data.archivos.map((file: { id: number; url: string; tipo: string }) => ({
-              file: null,
-              url: file.url,
-              type: file.tipo === "imagen" ? "image" : "video", // Asegurar que se interprete correctamente el tipo
-            })));
-            console.log("datos media: ", mediaFiles)
+        setMediaFiles(
+  data.archivos.map((file: { url: string; tipo: string }) => ({
+    url: file.url,
+    tipo: file.tipo,
+  }))
+);
+
+           
             setCodigobarras(data.codigoBarra);
            // Manejo de variantes y atributos
            const formattedVariants = data.variantes.map((variante: any) => ({
@@ -156,7 +157,7 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
     useEffect(() => {
       cargarDatosProducto();
     }, [id]);
-  
+   console.log("datos media: ", mediaFiles)
     return (
       <div className="bg-[#f3f4f6] relative">
         <BotonActualizar id={id} /> {/* Pasar el ID del producto al botón de actualizar */}
@@ -186,7 +187,7 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
               </div>
             </ContenidoAdminIzquierda>
             <ContenidoAdminIzquierda>
-              <MediaUploader />
+             <MediaUploader mediaFiles={mediaFiles} setMediaFiles={setMediaFiles} />
             </ContenidoAdminIzquierda>
             <ContenidoAdminIzquierda>
               <TextInput

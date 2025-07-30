@@ -6,9 +6,11 @@ import { useGlobalContext } from '../context/GlobalContext';
 
 interface FloatingSaveButtonProps {
   variants: any[];
+    mediaFiles: string[];
+  setMediaFiles: (files: string[]) => void;
 }
 
-const FloatingSaveButton: React.FC<FloatingSaveButtonProps> = ({ variants }) => {
+const FloatingSaveButton: React.FC<FloatingSaveButtonProps> = ({ variants, mediaFiles, setMediaFiles }) => {
   const router = useRouter();
   const {
     productName,
@@ -39,9 +41,6 @@ const FloatingSaveButton: React.FC<FloatingSaveButtonProps> = ({ variants }) => 
     setProductState,
     etiquetas,
     setEtiquetas,
-    mediaFiles,
-    setMediaFiles,
-
   } = useGlobalContext();
 
 

@@ -1,81 +1,77 @@
-// MediaUploader.tsx
 "use client";
 
-import React, { ChangeEvent } from "react";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { supabase } from "@/supabase/client";
+import React, { useState } from "react";
+import { FiUploadCloud } from "react-icons/fi";
+import { v4 as uuidv4 } from "uuid";
+interface MediaUploaderProps {
+  mediaFiles: { url: string, tipo: string }[];
+  setMediaFiles: (files: { url: string, tipo: string }[]) => void;
+}
+const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles }) =>{
+  const [uploading, setUploading] = useState(false);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
-export default function MediaUploader() {
-  const { mediaFiles, addMedia, removeMedia } = useGlobalContext();
+const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (!files) return;
 
-  const handleMediaChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  setUploading(true);
+  const uploadedFiles: { url: string, tipo: string }[] = [];
 
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExt}`;
+    const filePath = `productos/${fileName}`;
+
+    const { error } = await supabase.storage.from("productos").upload(filePath, file);
+    if (error) {
+      console.error("Upload error:", error.message);
+      continue;
     }
-  
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_URL_ADMIN}/archivos/upload-multiple`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
 
-      const data = await response.json();
-      if (response.ok && data.files) {  // Cambia "archivos" a "files"
-        addMedia(data.files);  // Cambia "archivos" a "files" aquí también
-        console.log("type file ok: ",data.files)
-        console.log("media files: ",mediaFiles)
-      } else {
-        console.error("No se encontraron archivos en la respuesta", data);
-      }
-    } catch (error) {
-      console.error("Error al subir archivos:", error);
+    const { data } = supabase.storage.from("productos").getPublicUrl(filePath);
+    if (data?.publicUrl) {
+      uploadedFiles.push({ url: data.publicUrl, tipo: "imagen" }); // o "video" si detectas .mp4 u otro
     }
-  };
+  }
+
+  setMediaFiles((prev) => [...prev, ...uploadedFiles]);
+  setUploadedUrls((prev) => [...prev, ...uploadedFiles.map(f => f.url)]);
+  setUploading(false);
+};
+
+console.log("files media edit: ",mediaFiles)
+
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <label className="block mb-2 text-sm font-medium text-gray-700">
-        Subir Imágenes o Videos
-      </label>
-      <input
-        type="file"
-        multiple
-        accept="image/*,video/*"
-        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-        onChange={handleMediaChange}
-      />
-
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        {mediaFiles.map((media, index) => (
-          <div key={index} className="relative">
-            {media.type === "image" || "upload" ? (
-              <img
-                src={media.url}
-                alt={`Media ${index + 1}`}
-                className="w-full h-32 object-cover rounded shadow"
-              />
-            ) : (
-              <video
-                src={media.url}
-                controls
-                className="w-full h-32 object-cover rounded shadow"
-              />
-            )}
-            <button
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-              onClick={() => removeMedia(index)}
-            >
-              X
-            </button>
-          </div>
-        ))}
+    <div className="space-y-3">
+      <label className="block text-sm text-gray-700 font-medium mb-1">Subir imágenes del producto</label>
+      <div className="border border-dashed border-gray-400 rounded-md p-4 flex flex-col items-center justify-center">
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleUpload}
+          className="hidden"
+          id="media-upload"
+        />
+        <label htmlFor="media-upload" className="cursor-pointer text-blue-600 hover:underline flex items-center gap-2">
+          <FiUploadCloud /> Seleccionar archivos
+        </label>
       </div>
+
+      {uploading && <p className="text-sm text-gray-500">Subiendo...</p>}
+
+     <div className="flex flex-wrap gap-3 mt-4">
+  {[...mediaFiles, ...uploadedUrls.map(url => ({ url, tipo: 'imagen' }))].map((file, i) => (
+    <img key={i} src={file.url} alt={`img-${i}`} className="w-24 h-24 object-cover rounded border" />
+  ))}
+</div>
+
     </div>
   );
-}
+};
+
+export default MediaUploader;
