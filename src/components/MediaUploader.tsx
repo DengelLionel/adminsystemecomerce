@@ -1,49 +1,98 @@
 "use client";
 
-import { supabase } from "@/supabase/client";
 import React, { useState } from "react";
 import { FiUploadCloud } from "react-icons/fi";
 import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/supabase/client";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface MediaUploaderProps {
-  mediaFiles: { url: string, tipo: string }[];
-  setMediaFiles: (files: { url: string, tipo: string }[]) => void;
+  mediaFiles: { url: string; tipo: string }[];
+  setMediaFiles: (files: { url: string; tipo: string }[]) => void;
 }
-const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles }) =>{
-  const [uploading, setUploading] = useState(false);
-  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
-const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files) return;
+const SortableImage = ({ url, index, isSelected, onSelect }: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: url });
 
-  setUploading(true);
-  const uploadedFiles: { url: string, tipo: string }[] = [];
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `productos/${fileName}`;
 
-    const { error } = await supabase.storage.from("productos").upload(filePath, file);
-    if (error) {
-      console.error("Upload error:", error.message);
-      continue;
-    }
 
-    const { data } = supabase.storage.from("productos").getPublicUrl(filePath);
-    if (data?.publicUrl) {
-      uploadedFiles.push({ url: data.publicUrl, tipo: "imagen" }); // o "video" si detectas .mp4 u otro
-    }
-  }
-
-  setMediaFiles((prev) => [...prev, ...uploadedFiles]);
-  setUploadedUrls((prev) => [...prev, ...uploadedFiles.map(f => f.url)]);
-  setUploading(false);
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="relative group"
+    >
+      <img
+        src={url}
+        alt="media"
+        className="w-24 h-24 object-cover rounded border"
+      />
+      <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+      </div>
+    </div>
+  );
 };
 
-console.log("files media edit: ",mediaFiles)
+const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles }) => {
+  const [uploading, setUploading] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setUploading(true);
+    const uploadedFiles: { url: string; tipo: string }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `productos/${fileName}`;
+
+      const { error } = await supabase.storage.from("productos").upload(filePath, file);
+      if (error) {
+        console.error("Upload error:", error.message);
+        continue;
+      }
+
+      const { data } = supabase.storage.from("productos").getPublicUrl(filePath);
+      if (data?.publicUrl) {
+        uploadedFiles.push({ url: data.publicUrl, tipo: "imagen" });
+      }
+    }
+
+    setMediaFiles((prev) => [...prev, ...uploadedFiles]);
+    setUploading(false);
+  };
+
+  const handleDeleteSelected = () => {
+    const remaining = mediaFiles.filter(file => !selected.has(file.url));
+    setMediaFiles(remaining);
+    setSelected(new Set());
+  };
 
   return (
     <div className="space-y-3">
@@ -64,12 +113,47 @@ console.log("files media edit: ",mediaFiles)
 
       {uploading && <p className="text-sm text-gray-500">Subiendo...</p>}
 
-     <div className="flex flex-wrap gap-3 mt-4">
-  {[...mediaFiles, ...uploadedUrls.map(url => ({ url, tipo: 'imagen' }))].map((file, i) => (
-    <img key={i} src={file.url} alt={`img-${i}`} className="w-24 h-24 object-cover rounded border" />
-  ))}
-</div>
+      {selected.size > 0 && (
+        <button
+          onClick={handleDeleteSelected}
+          className="text-red-600 text-sm underline"
+        >
+          Eliminar
+        </button>
+      )}
 
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={({ active, over }) => {
+          if (active.id !== over?.id) {
+            const oldIndex = mediaFiles.findIndex((f) => f.url === active.id);
+            const newIndex = mediaFiles.findIndex((f) => f.url === over?.id);
+            const reordered = arrayMove(mediaFiles, oldIndex, newIndex);
+            setMediaFiles(reordered);
+          }
+        }}
+      >
+        <SortableContext items={mediaFiles.map((f) => f.url)} strategy={verticalListSortingStrategy}>
+          <div className="flex flex-wrap gap-3 mt-4">
+            {mediaFiles.map((file, index) => (
+              <SortableImage
+                key={file.url}
+                url={file.url}
+                index={index}
+                isSelected={selected.has(file.url)}
+                onSelect={() => {
+                  setSelected((prev) => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(file.url)) newSet.delete(file.url);
+                    else newSet.add(file.url);
+                    return newSet;
+                  });
+                }}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };
