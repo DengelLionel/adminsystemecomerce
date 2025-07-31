@@ -49,7 +49,8 @@ const SortableImage = ({ url, index, isSelected, onSelect }: any) => {
         className="w-24 h-24 object-cover rounded border"
       />
       <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+       <Checkbox checked={isSelected} onChange={onSelect} />
+
       </div>
     </div>
   );
@@ -113,14 +114,17 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles
 
       {uploading && <p className="text-sm text-gray-500">Subiendo...</p>}
 
-      {selected.size > 0 && (
-        <button
-          onClick={handleDeleteSelected}
-          className="text-red-600 text-sm underline"
-        >
-          Eliminar
-        </button>
-      )}
+    {selected.size > 0 && (
+  <div className="flex justify-end">
+    <button
+      onClick={handleDeleteSelected}
+      className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+    >
+      Eliminar seleccionadas
+    </button>
+  </div>
+)}
+
 
       <DndContext
         collisionDetection={closestCenter}
@@ -141,14 +145,16 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles
                 url={file.url}
                 index={index}
                 isSelected={selected.has(file.url)}
-                onSelect={() => {
-                  setSelected((prev) => {
-                    const newSet = new Set(prev);
-                    if (newSet.has(file.url)) newSet.delete(file.url);
-                    else newSet.add(file.url);
-                    return newSet;
-                  });
-                }}
+              onSelect={(e: React.ChangeEvent<HTMLInputElement>) => {
+  const checked = e.target.checked;
+  setSelected((prev) => {
+    const newSet = new Set(prev);
+    if (checked) newSet.add(file.url);
+    else newSet.delete(file.url);
+    return newSet;
+  });
+}}
+
               />
             ))}
           </div>

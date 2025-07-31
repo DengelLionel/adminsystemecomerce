@@ -7,13 +7,16 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <input
         type="checkbox"
-        className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${className}`}
+        className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${className || ""}`}
         ref={ref}
+        checked={props.checked} // 👈 asegúrate de pasar `checked`
+        onChange={props.onChange} // 👈 esto también
         {...props}
       />
     );
   }
 );
+
 Checkbox.displayName = "Checkbox";
 
 export { Checkbox };
