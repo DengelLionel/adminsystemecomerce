@@ -1,22 +1,25 @@
 import * as React from "react";
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
-const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, ...props }, ref) => {
+export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+  ({ checked, onChange, ...props }, ref) => {
     return (
       <input
         type="checkbox"
-        className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${className || ""}`}
         ref={ref}
-        checked={props.checked} // 👈 asegúrate de pasar `checked`
-        onChange={props.onChange} // 👈 esto también
+        checked={checked}
+        onChange={onChange}
         {...props}
+        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
       />
     );
   }
 );
 
+
 Checkbox.displayName = "Checkbox";
 
-export { Checkbox };

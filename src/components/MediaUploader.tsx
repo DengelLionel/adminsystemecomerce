@@ -19,7 +19,17 @@ interface MediaUploaderProps {
   setMediaFiles: (files: { url: string; tipo: string }[]) => void;
 }
 
-const SortableImage = ({ url, index, isSelected, onSelect }: any) => {
+const SortableImage = ({
+  url,
+  index,
+  isSelected,
+  onChange, // ✅ aquí cambió el nombre
+}: {
+  url: string;
+  index: number;
+  isSelected: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
   const {
     attributes,
     listeners,
@@ -32,8 +42,6 @@ const SortableImage = ({ url, index, isSelected, onSelect }: any) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-
 
   return (
     <div
@@ -48,13 +56,18 @@ const SortableImage = ({ url, index, isSelected, onSelect }: any) => {
         alt="media"
         className="w-24 h-24 object-cover rounded border"
       />
-      <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-       <Checkbox checked={isSelected} onChange={onSelect} />
+      <div className="absolute top-1 left-1 opacity-100 transition-opacity z-10">
+        <Checkbox
+  checked={isSelected}
+  onChange={onChange}
+  onPointerDown={(e) => e.stopPropagation()}
+/>
 
       </div>
     </div>
   );
 };
+
 
 const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles }) => {
   const [uploading, setUploading] = useState(false);
@@ -140,22 +153,26 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaFiles, setMediaFiles
         <SortableContext items={mediaFiles.map((f) => f.url)} strategy={verticalListSortingStrategy}>
           <div className="flex flex-wrap gap-3 mt-4">
             {mediaFiles.map((file, index) => (
-              <SortableImage
-                key={file.url}
-                url={file.url}
-                index={index}
-                isSelected={selected.has(file.url)}
-              onSelect={(e: React.ChangeEvent<HTMLInputElement>) => {
-  const checked = e.target.checked;
-  setSelected((prev) => {
-    const newSet = new Set(prev);
-    if (checked) newSet.add(file.url);
-    else newSet.delete(file.url);
-    return newSet;
-  });
-}}
+             <SortableImage
+  key={file.url}
+  url={file.url}
+  index={index}
+  isSelected={selected.has(file.url)}
+  onChange={(e) => {
+    const checked = e.target.checked;
+    setSelected(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(file.url);
+      } else {
+        newSet.delete(file.url);
+      }
+      return newSet;
+    });
+  }}
+/>
 
-              />
+
             ))}
           </div>
         </SortableContext>
