@@ -48,15 +48,14 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
       setProductState,
       setCodigobarras,
       handleInputChange,
-      setVariantsfinal,
       setMetaDescription,
-      setTitle,
-      variantsfinal,optionsfinal, setOptionsfinal
+      setTitle
     } = useGlobalContext();
     const [massEditMode, setMassEditMode] = useState(false);
     const [selectedVariants, setSelectedVariants] = useState<number[]>([]);
    const [mediaFiles, setMediaFiles] = useState<{ url: string; tipo: string }[]>([]);
-
+   const [variants, setVariants] = useState([]);
+  const [options, setOptions] = useState([]);
     const id = params.id; // Obtener el ID del producto de las props
   
     const cargarDatosProducto = async () => {
@@ -124,8 +123,7 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
             values: Array.from(optionsMap[optionName]),
           }));
   
-          setVariantsfinal(formattedVariants); // Cargar variantes en el contexto o estado de variantes
-          setOptionsfinal(initialOptions);
+        
          console.log("variantessss, ",formattedVariants)
           } else {
             console.error("Error al cargar los datos del producto.");
@@ -245,16 +243,16 @@ const EditarProducto = ({ params }: { params: { id: string } }) => {
   
             <ContenidoAdminIzquierda>
             <Variantes
-  variants={variantsfinal}
-  setVariants={setVariantsfinal}
-  options={optionsfinal}
-  setOptions={setOptionsfinal}
+  variants={variants}
+  setVariants={setVariants}
+  options={options}
+  setOptions={setOptions}
 />
 
               {massEditMode && (
   <MassEditTable
-    variants={variantsfinal}
-    setVariants={setVariantsfinal}
+    variants={variants}
+    setVariants={setVariants}
     selectedVariants={selectedVariants}
     setMassEditMode={setMassEditMode}
   />

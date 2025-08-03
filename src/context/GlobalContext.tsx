@@ -92,9 +92,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const URL_DE_LA_TIENDA = "https://mitiendaden.com/producto";
   const [canonicalUrl, setCanonicalUrl] = useState(`${URL_DE_LA_TIENDA}/${slug}`);
   const [editorContent, setEditorContent] = useState('');
-  const [mediaFiles, setMediaFiles] = useState<Media[]>([]);
-  const [variantsfinal, setVariantsfinal] = useState<any[]>([]);
-  const [optionsfinal, setOptionsfinal] = useState<any[]>([]);
+
   const addTag = (tag: Etiqueta) => {
     setEtiquetas(prevTags => [...prevTags, tag]);
   };
@@ -130,13 +128,10 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       }));
     }
   
-    setMediaFiles((prevMedia) => [...prevMedia, ...updatedMedia]);
+   
   };
   
 
-  const removeMedia = (index: number) => {
-    setMediaFiles((prevMedia) => prevMedia.filter((_, i) => i !== index));
-  };
 
   React.useEffect(() => {
     setCanonicalUrl(`${URL_DE_LA_TIENDA}/${slug}`);
@@ -169,8 +164,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         setCodigobarras,
         handleInputChange,
         productState,
-        optionsfinal, 
-        setOptionsfinal,
         setProductState,
         title,
         setTitle,
@@ -187,12 +180,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         removeTag,
         editorContent,
         setEditorContent,
-        mediaFiles,
-        setMediaFiles,
-        addMedia,
-        removeMedia,
-        variantsfinal,
-        setVariantsfinal
       }}
     >
       {children}
